@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新闻资讯</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        
+        .container {
+            width: 1000px;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #d32f2f;
+            margin-bottom: 20px;
+        }
+        
+        hr {
+            border: none;
+            height: 1px;
+            background-color: #ddd;
+            margin-bottom: 30px;
+        }
+        
+        .content {
+            display: flex;
+        }
+        
+        .left-column {
+            flex: 2;
+            padding-right: 30px;
+            border-right: 1px solid #eee;
+        }
+        
+        .right-column {
+            flex: 1;
+            padding-left: 30px;
+        }
+        
+        .news-item {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .news-item:last-child {
+            border-bottom: none;
+        }
+        
+        h4 {
+            color: #1976d2;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        
+        .news-images {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .news-images img {
+            width: 48%;
+            height: auto;
+            border-radius: 4px;
+        }
+        
+        .author-info {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .hot-news {
+            margin-bottom: 25px;
+        }
+        
+        .hot-news a {
+            display: block;
+            color: #d32f2f;
+            text-decoration: none;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .hot-news a:hover {
+            text-decoration: underline;
+        }
+        
+        .hot-news img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>今日新闻资讯</h1>
+        <hr>
+        
+        <div class="content">
+            <div class="left-column">
+                <div class="news-item">
+                    <h4>科技创新引领未来发展新趋势</h4>
+                    <div class="news-images">
+                        <img src="https://pic.ibaotu.com/00/26/72/042888piCCfM.jpg-0.jpg!ww700" alt="科技新闻图片1">
+                        <img src="https://img.tukuppt.com/preview/00/50/86/81/50868162e394fe7233eshow.jpg" alt="科技新闻图片2">
+                    </div>
+                    <p class="author-info">作者：张科技 | 发布时间：2023-06-15 | 阅读量：1.2万</p>
+                </div>
+                
+                <div class="news-item">
+                    <h4>全球气候变化峰会达成新协议</h4>
+                    <div class="news-images">
+                        <img src="https://n.sinaimg.cn/sinakd20211114s/214/w2048h1366/20211114/2c37-fbf273497875c2829d6d3b2e7cd761b7.jpg" alt="气候新闻图片1">
+                        <img src="https://www.whb.cn/u/cms/www/202211/08022709khbz.JPG" alt="气候新闻图片2">
+                    </div>
+                    <p class="author-info">作者：李环保 | 发布时间：2023-06-14 | 阅读量：8千</p>
+                </div>
+                
+                <div class="news-item">
+                    <h4>文化旅游产业复苏势头强劲</h4>
+                    <div class="news-images">
+                        <img src="https://tse4-mm.cn.bing.net/th/id/OIP-C.8l5LxsaF7M2x1YVTdosaogHaG9?rs=1&pid=ImgDetMain" alt="旅游新闻图片1">
+                        <img src="https://ts1.tc.mm.bing.net/th/id/R-C.ffaca2aec8f088f336e498bc5c4e738d?rik=TtVqHOUYSQnCiw&riu=http%3a%2f%2fn.sinaimg.cn%2fsinakd20230324s%2f633%2fw860h573%2f20230324%2f40e0-5ba7a65db439e6e0c9d90c37d10601aa.jpg&ehk=Zb0%2fzmbTEwySQNZjMweMNQME9xIUkvhYOFXJfyz%2ffSQ%3d&risl=&pid=ImgRaw&r=0" alt="旅游新闻图片2">
+                    </div>
+                    <p class="author-info">作者：王旅行 | 发布时间：2023-06-13 | 阅读量：5千</p>
+                </div>
+            </div>
+            
+            <div class="right-column">
+                <h3>相关热文推荐</h3>
+                
+                <div class="hot-news">
+                    <a href="#">人工智能技术突破性进展</a>
+                    <img src="https://tse3-mm.cn.bing.net/th/id/OIP-C._L7fDXXSwv82nqRM13obngHaEe?rs=1&pid=ImgDetMain" alt="AI新闻图片">
+                </div>
+                
+                <div class="hot-news">
+                    <a href="#">新能源汽车市场占有率创新高</a>
+                    <img src="https://ts1.tc.mm.bing.net/th/id/R-C.993c21992cea2d555907f1b882c50ce8?rik=4kChU2ifBHjcng&riu=http%3a%2f%2fwww.cada.cn%2fContent%2fueditor%2fnet%2fupload%2fimage%2f20220616%2f6379099465401223151314956.png&ehk=bZQYD8%2fS%2f4r66aQb9LzZrxsl7rwF9CrF9RMX8ZBzbuE%3d&risl=&pid=ImgRaw&r=0" alt="汽车新闻图片">
+                </div>
+                
+                <div class="hot-news">
+                    <a href="#">5G技术应用场景持续扩展</a>
+                    <img src="https://ts1.tc.mm.bing.net/th/id/R-C.b644c8e193ab1f5b83e2df943e2ba3dc?rik=qMqsEWkZu1zCUA&riu=http%3a%2f%2f5b0988e595225.cdn.sohucs.com%2fimages%2f20190416%2f9913a37fcfaa4355b43eca897f047fc7.jpeg&ehk=dp3Zd8Amav%2fP13gcZfuavH1xMJaEzISUfHi6eHQWIsQ%3d&risl=&pid=ImgRaw&r=0" alt="5G新闻图片">
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
