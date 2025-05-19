@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>七彩灯动画</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .light-glow {
+                filter: drop-shadow(0 0 8px currentColor);
+            }
+            .btn-shadow {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .btn-shadow-hover {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white flex flex-col items-center justify-center p-4 font-sans">
+    <div class="w-full max-w-4xl bg-gray-800/50 backdrop-blur-md rounded-2xl p-6 md:p-8 shadow-2xl border border-gray-700/50">
+        <header class="text-center mb-8">
+            <h1 class="text-[clamp(1.8rem,5vw,2.5rem)] font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 mb-2">七彩灯动画</h1>
+            <p class="text-gray-400 max-w-2xl mx-auto">点击下方按钮控制七彩灯的动画效果，灯光会按照七彩颜色循环变化，形成炫丽的视觉体验。</p>
+        </header>
+
+        <main class="flex flex-col items-center justify-center">
+            <!-- 七彩灯容器 -->
+            <div class="relative w-[clamp(280px,80vw,450px)] h-[clamp(280px,80vw,450px)] mb-10" id="lights-container">
+                <!-- 七个灯将通过JS动态定位 -->
+            </div>
+
+            <!-- 控制面板 -->
+            <div class="flex flex-wrap justify-center gap-4 w-full max-w-md mt-6">
+                <button id="start-btn" class="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-medium py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/50 btn-shadow hover:btn-shadow-hover">
+                    <i class="fa fa-play"></i>
+                    <span>启动</span>
+                </button>
+                <button id="stop-btn" class="flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 text-white font-medium py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500/50 btn-shadow hover:btn-shadow-hover" disabled>
+                    <i class="fa fa-stop"></i>
+                    <span>停止</span>
+                </button>
+            </div>
+        </main>
+
+        <footer class="mt-10 text-center text-gray-500 text-sm">
+            <p>© 2025 七彩灯动画展示 | 使用HTML, CSS3和JavaScript制作</p>
+        </footer>
+    </div>
+
+    <script>
+        // 七个基本颜色
+        const colors = [
+            'rgb(255, 0, 0)',    // 红色
+            'rgb(255, 165, 0)',  // 橙色
+            'rgb(255, 255, 0)',  // 黄色
+            'rgb(0, 128, 0)',    // 绿色
+            'rgb(0, 0, 255)',    // 蓝色
+            'rgb(75, 0, 130)',   // 靛色
+            'rgb(148, 0, 211)'   // 紫色
+        ];
+
+        // 创建七个灯
+        const container = document.getElementById('lights-container');
+        const radius = container.offsetWidth * 0.35; // 灯围成的圆的半径
+        const centerX = container.offsetWidth / 2;
+        const centerY = container.offsetHeight / 2;
+
+        // 存储每个灯的DOM元素
+        const lights = [];
+        // 动画定时器
+        let animationInterval;
+        // 动画状态
+        let isAnimating = false;
+        // 当前颜色排列索引
+        let currentPermutationIndex = 0;
+        // 生成所有可能的颜色排列
+        const colorPermutations = generatePermutations(colors);
+
+        // 生成数组的所有排列
+        function generatePermutations(array) {
+            const result = [];
+            
+            function permute(current, remaining) {
+                if (remaining.length === 0) {
+                    result.push([...current]);
+                } else {
+                    for (let i = 0; i < remaining.length; i++) {
+                        const next = [...current, remaining[i]];
+                        const rest = [...remaining.slice(0, i), ...remaining.slice(i + 1)];
+                        permute(next, rest);
+                    }
+                }
+            }
+            
+            permute([], array);
+            return result;
+        }
+
+        // 初始化灯
+        for (let i = 0; i < 7; i++) {
+            const angle = (i / 7) * Math.PI * 2;
+            const x = centerX + radius * Math.cos(angle);
+            const y = centerY + radius * Math.sin(angle);
+
+            const light = document.createElement('div');
+            light.className = 'absolute w-12 h-12 md:w-16 md:h-16 rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-in-out light-glow border-2 border-gray-800/70';
+            light.style.left = `${x}px`;
+            light.style.top = `${y}px`;
+            light.style.backgroundColor = colors[i]; // 初始颜色各不相同
+            light.style.boxShadow = `0 0 15px ${colors[i]}`;
+            
+            container.appendChild(light);
+            lights.push(light);
+            
+            // 为每个灯添加一个光晕效果元素
+            const glow = document.createElement('div');
+            glow.className = 'absolute w-24 h-24 md:w-32 md:h-32 rounded-full opacity-30';
+            glow.style.left = '50%';
+            glow.style.top = '50%';
+            glow.style.transform = 'translate(-50%, -50%)';
+            glow.style.backgroundColor = colors[i];
+            glow.style.filter = 'blur(20px)';
+            glow.style.transition = 'background-color 0.5s ease-in-out';
+            light.appendChild(glow);
+        }
+
+        // 更新灯的颜色，确保每个时刻颜色各不相同
+        function updateLightColors() {
+            // 获取下一个排列索引
+            currentPermutationIndex = (currentPermutationIndex + 1) % colorPermutations.length;
+            const currentColors = colorPermutations[currentPermutationIndex];
+            
+            lights.forEach((light, index) => {
+                const color = currentColors[index];
+                
+                // 更新灯的颜色和光晕
+                light.style.backgroundColor = color;
+                light.style.boxShadow = `0 0 15px ${color}`;
+                light.querySelector('div').style.backgroundColor = color;
+                
+                // 添加颜色变化的动画效果
+                light.classList.add('scale-110');
+                setTimeout(() => {
+                    light.classList.remove('scale-110');
+                }, 300);
+            });
+        }
+
+        // 启动动画
+        document.getElementById('start-btn').addEventListener('click', () => {
+            if (!isAnimating) {
+                isAnimating = true;
+                animationInterval = setInterval(updateLightColors, 1000);
+                
+                // 更新按钮状态
+                document.getElementById('start-btn').disabled = true;
+                document.getElementById('start-btn').classList.add('opacity-50', 'cursor-not-allowed');
+                document.getElementById('start-btn').classList.remove('hover:bg-primary/90', 'hover:scale-105', 'btn-shadow-hover');
+                
+                document.getElementById('stop-btn').disabled = false;
+                document.getElementById('stop-btn').classList.remove('opacity-50', 'cursor-not-allowed');
+                document.getElementById('stop-btn').classList.add('hover:bg-gray-600', 'hover:scale-105', 'btn-shadow-hover');
+                
+                // 添加启动动画效果
+                container.classList.add('scale-105');
+                setTimeout(() => {
+                    container.classList.remove('scale-105');
+                }, 300);
+            }
+        });
+
+        // 停止动画
+        document.getElementById('stop-btn').addEventListener('click', () => {
+            if (isAnimating) {
+                isAnimating = false;
+                clearInterval(animationInterval);
+                
+                // 更新按钮状态
+                document.getElementById('stop-btn').disabled = true;
+                document.getElementById('stop-btn').classList.add('opacity-50', 'cursor-not-allowed');
+                document.getElementById('stop-btn').classList.remove('hover:bg-gray-600', 'hover:scale-105', 'btn-shadow-hover');
+                
+                document.getElementById('start-btn').disabled = false;
+                document.getElementById('start-btn').classList.remove('opacity-50', 'cursor-not-allowed');
+                document.getElementById('start-btn').classList.add('hover:bg-primary/90', 'hover:scale-105', 'btn-shadow-hover');
+                
+                // 添加停止动画效果
+                container.classList.add('scale-95');
+                setTimeout(() => {
+                    container.classList.remove('scale-95');
+                }, 300);
+            }
+        });
+
+        // 添加页面加载动画
+        window.addEventListener('load', () => {
+            container.classList.add('opacity-0', 'translate-y-4');
+            setTimeout(() => {
+                container.classList.remove('opacity-0', 'translate-y-4');
+                container.classList.add('transition-all', 'duration-700', 'ease-out');
+            }, 300);
+        });
+    </script>
+</body>
+</html>
+    
