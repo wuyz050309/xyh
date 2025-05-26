@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课堂点名系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#EC4899',
+                        neutral: '#1F2937',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .name-cell {
+                @apply py-1.5 px-2 text-center transition-all duration-300 cursor-pointer text-sm;
+            }
+            .name-selected {
+                @apply bg-secondary/20 text-secondary font-bold scale-105 shadow-lg;
+            }
+            .btn-primary {
+                @apply bg-primary hover:bg-primary/90 text-white font-bold py-2 px-5 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-md text-sm;
+            }
+            .btn-secondary {
+                @apply bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-5 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500/50 shadow-md text-sm;
+            }
+            .result-box {
+                @apply bg-white rounded-lg p-3 shadow-lg border-2 border-dashed border-primary/30 max-h-[150px] overflow-y-auto;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-3 py-4 max-w-6xl">
+        <header class="text-center mb-4">
+            <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-neutral mb-1">
+                <i class="fa fa-users mr-2"></i>课堂点名系统
+            </h1>
+            <p class="text-gray-600 text-sm">高效随机点名，公平公正</p>
+        </header>
+
+        <div class="bg-white rounded-xl shadow-lg p-3 mb-4 transform transition-all duration-500 hover:shadow-xl">
+            <div class="flex flex-wrap justify-center gap-2 mb-3">
+                <button id="startBtn" class="btn-primary">
+                    <i class="fa fa-play mr-2"></i>开始点名
+                </button>
+                <button id="stopBtn" class="btn-secondary" disabled>
+                    <i class="fa fa-stop mr-2"></i>停止点名
+                </button>
+            </div>
+
+            <div class="overflow-x-auto max-h-[250px] overflow-y-auto">
+                <table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden">
+                    <thead class="bg-gray-50 sticky top-0 z-10">
+                        <tr>
+                            <th scope="col" class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">序号</th>
+                            <th scope="col" class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">姓名</th>
+                            <th scope="col" class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">序号</th>
+                            <th scope="col" class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">姓名</th>
+                        </tr>
+                    </thead>
+                    <tbody id="nameTable" class="bg-white divide-y divide-gray-200">
+                        <!-- 名单将通过JavaScript动态生成 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-3 transform transition-all duration-500 hover:shadow-xl">
+            <h2 class="text-base font-bold text-neutral mb-2 flex items-center">
+                <i class="fa fa-list-alt mr-2"></i>已点名名单
+            </h2>
+            <div id="resultBox" class="result-box flex flex-wrap gap-1.5">
+                <p class="text-gray-400 italic w-full text-center text-sm">点名结束后，被选中的学生将显示在这里</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 实际名单数据
+        const names = [
+            "白林涵", "陈昊妍", "董萌萌", "范昱涵", "高一涵", "郭超", "侯宪坤", "黄博", 
+            "姜子超", "鞠忠宏", "李茂川", "李永乐", "李云", "林佳祺", "吕君蕊", "秦金龙", 
+            "秦士淞", "孙家豪", "孙若冰", "孙义凯", "孙子凌", "索京奥", "王朝闻", "王俊豪", 
+            "王梦月", "王文昌", "王运旺", "王祉盛", "卫学振", "武启航", "徐浩文", "许广洋", 
+            "许源赫", "薛景文", "张丁文", "张静", "张俊飞", "张艳可", "张云翔", "张志恒", 
+            "赵宝华", "赵家豪", "周政涟", "邹谦慧"
+        ];
+
+        // DOM元素
+        const nameTable = document.getElementById('nameTable');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resultBox = document.getElementById('resultBox');
+
+        // 状态变量
+        let isRolling = false;
+        let rollInterval;
+        let currentIndex = -1;
+        const selectedNames = new Set();
+
+        // 初始化表格
+        function initTable() {
+            let html = '';
+            const halfLength = Math.ceil(names.length / 2);
+            
+            for (let i = 0; i < halfLength; i++) {
+                const leftIndex = i;
+                const rightIndex = i + halfLength;
+                
+                html += '<tr class="hover:bg-gray-50 transition-colors">';
+                html += `<td class="px-3 py-1.5 whitespace-nowrap text-sm">${leftIndex + 1}</td>`;
+                html += `<td id="name-${leftIndex}" class="name-cell">${names[leftIndex]}</td>`;
+                
+                if (rightIndex < names.length) {
+                    html += `<td class="px-3 py-1.5 whitespace-nowrap text-sm">${rightIndex + 1}</td>`;
+                    html += `<td id="name-${rightIndex}" class="name-cell">${names[rightIndex]}</td>`;
+                } else {
+                    html += '<td class="px-3 py-1.5 whitespace-nowrap"></td>';
+                    html += '<td class="px-3 py-1.5 whitespace-nowrap"></td>';
+                }
+                
+                html += '</tr>';
+            }
+            
+            nameTable.innerHTML = html;
+        }
+
+        // 随机选择名字
+        function rollName() {
+            // 移除之前选中的名字样式
+            if (currentIndex !== -1) {
+                const prevName = document.getElementById(`name-${currentIndex}`);
+                if (prevName && !selectedNames.has(currentIndex)) {
+                    prevName.classList.remove('name-selected');
+                }
+            }
+            
+            // 选择新的随机名字
+            let newIndex;
+            do {
+                newIndex = Math.floor(Math.random() * names.length);
+            } while (selectedNames.size < names.length && selectedNames.has(newIndex));
+            
+            currentIndex = newIndex;
+            
+            // 添加选中样式
+            const currentName = document.getElementById(`name-${currentIndex}`);
+            currentName.classList.add('name-selected');
+            
+            // 滚动到当前选中的名字
+            currentName.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // 开始点名
+        function startRolling() {
+            if (isRolling) return;
+            
+            // 检查是否所有名字都已被选中
+            if (selectedNames.size >= names.length) {
+                alert('所有名字都已被选中过了！');
+                return;
+            }
+            
+            isRolling = true;
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            
+            // 初始速度较慢，然后逐渐加快
+            let speed = 300;
+            rollName();
+            
+            rollInterval = setInterval(() => {
+                rollName();
+                // 逐渐加快速度，但不超过最小值
+                speed = Math.max(50, speed * 0.95);
+                clearInterval(rollInterval);
+                rollInterval = setInterval(rollName, speed);
+            }, speed);
+        }
+
+        // 停止点名
+        function stopRolling() {
+            if (!isRolling) return;
+            
+            isRolling = false;
+            clearInterval(rollInterval);
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            
+            // 添加到已选名单
+            if (currentIndex !== -1 && !selectedNames.has(currentIndex)) {
+                selectedNames.add(currentIndex);
+                
+                // 更新结果显示
+                updateResultBox();
+                
+                // 添加动画效果
+                const currentName = document.getElementById(`name-${currentIndex}`);
+                currentName.classList.add('animate-bounce');
+                setTimeout(() => {
+                    currentName.classList.remove('animate-bounce');
+                }, 1000);
+            }
+        }
+
+        // 更新结果显示
+        function updateResultBox() {
+            if (selectedNames.size === 0) {
+                resultBox.innerHTML = '<p class="text-gray-400 italic w-full text-center text-sm">点名结束后，被选中的学生将显示在这里</p>';
+                return;
+            }
+            
+            resultBox.innerHTML = '';
+            Array.from(selectedNames).sort((a, b) => a - b).forEach(index => {
+                const badge = document.createElement('span');
+                badge.className = 'bg-secondary/10 text-secondary font-medium px-2 py-0.5 rounded-full flex items-center text-xs transition-all duration-300 hover:shadow-md';
+                badge.innerHTML = `${names[index]} <span class="ml-1 text-[10px]">(${index + 1}号)</span>`;
+                resultBox.appendChild(badge);
+            });
+            
+            // 添加统计信息
+            const countInfo = document.createElement('div');
+            countInfo.className = 'mt-1.5 text-xs text-gray-500 w-full';
+            countInfo.innerHTML = `已点名: ${selectedNames.size}/${names.length}`;
+            resultBox.appendChild(countInfo);
+        }
+
+        // 重置功能
+        function resetRolling() {
+            if (isRolling) {
+                stopRolling();
+            }
+            
+            // 移除所有选中状态
+            selectedNames.clear();
+            for (let i = 0; i < names.length; i++) {
+                const nameElement = document.getElementById(`name-${i}`);
+                if (nameElement) {
+                    nameElement.classList.remove('name-selected');
+                }
+            }
+            
+            // 更新结果显示
+            updateResultBox();
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initTable();
+            updateResultBox();
+            
+            // 事件监听
+            startBtn.addEventListener('click', startRolling);
+            stopBtn.addEventListener('click', stopRolling);
+            
+            // 添加重置功能（双击结果框）
+            resultBox.addEventListener('dblclick', resetRolling);
+            
+            // 添加键盘快捷键
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    if (isRolling) {
+                        stopRolling();
+                    } else {
+                        startRolling();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+    
